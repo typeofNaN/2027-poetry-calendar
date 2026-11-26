@@ -4,5 +4,5 @@ dist/
 *.tsbuildinfo
 .DS_Store
 coverage/
-
+output/
 .playwright-cli/
