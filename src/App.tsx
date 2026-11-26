@@ -473,6 +473,27 @@ export default function App() {
         </span>
         <i style={{ width: `${((index + 1) / 365) * 100}%` }} />
       </div>
+      <nav
+        aria-label="项目信息"
+        className={`mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs text-muted-foreground ${immersive ? 'invisible' : ''}`}
+      >
+        <a
+          href="https://github.com/typeofNaN/2027-poetry-calendar"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-sm py-2 transition-colors hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+        >
+          GitHub 仓库
+        </a>
+        <a
+          href="https://typeofnan.cn"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-sm py-2 transition-colors hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+        >
+          © {new Date().getFullYear()} typeofNaN
+        </a>
+      </nav>
       {notice && (
         <div
           className="fixed bottom-24 left-1/2 z-[100] -translate-x-1/2 rounded-xl bg-foreground px-5 py-3 text-sm text-background shadow-lg"

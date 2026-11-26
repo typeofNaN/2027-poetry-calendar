@@ -1,4 +1,4 @@
-# 岁时有诗 · Poetic Days
+# 岁时有诗 · 2027 Poetry Calendar
 
 一日一诗，四季皆景。2027 年静态诗词日历，采用 React、TypeScript、Vite、Tailwind CSS 和 pnpm。无服务器、登录或数据库；收藏与偏好保存在当前浏览器。
 
