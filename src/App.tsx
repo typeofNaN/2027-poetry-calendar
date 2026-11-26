@@ -206,21 +206,13 @@ export default function App() {
     if (!poster.current) return;
     try {
       const { toPng } = await import('html-to-image');
-      const [w, h] = ratio.split(':').map(Number);
+      await document.fonts.ready;
+      const width = poster.current.offsetWidth;
+      const height = poster.current.offsetHeight;
       const data = await toPng(poster.current, {
-        width: 1080,
-        height: (1080 * h) / w,
-        style: {
-          width: '1080px',
-          height: `${(1080 * h) / w}px`,
-          maxWidth: 'none',
-          maxHeight: 'none',
-          margin: '0',
-          padding: '80px',
-          gap: '40px',
-          fontSize: '28px',
-        },
-        pixelRatio: 1,
+        width,
+        height,
+        pixelRatio: 1080 / width,
       });
       const link = document.createElement('a');
       link.download = `岁时有诗-${date}.png`;
@@ -701,18 +693,41 @@ export default function App() {
                 }))}
               />
               <div
-                ref={poster}
-                className="mx-auto my-5 flex max-h-[55vh] w-full max-w-full flex-col items-center justify-center gap-5 bg-cover bg-center p-6 text-center text-stone-900 [&_h2]:font-serif [&_h2]:text-2xl [&_h2]:leading-loose"
+                className="mx-auto my-5 max-w-full"
                 style={{
-                  aspectRatio: ratio.replace(':', '/'),
-                  backgroundImage: `linear-gradient(rgba(249,247,241,.12),rgba(249,247,241,.12)),url(${imageUrl(day.background.url, base)})`,
+                  width: `min(100%, calc(55svh * ${ratio.replace(':', ' / ')}))`,
+                  containerType: 'inline-size',
                 }}
               >
-                <p>岁时有诗 · {date}</p>
-                <h2>{day.poetry.content}</h2>
-                <p>
-                  {day.poetry.author} · {day.poetry.title}
-                </p>
+                <div
+                  ref={poster}
+                  className="flex w-full flex-col items-center justify-center bg-[#faf4e6] bg-cover bg-center text-center text-stone-900"
+                  style={{
+                    aspectRatio: ratio.replace(':', '/'),
+                    backgroundImage: `linear-gradient(rgba(249,247,241,.12),rgba(249,247,241,.12)),url(${imageUrl(day.background.url, base)})`,
+                    padding: '8cqw',
+                    gap: '4cqw',
+                  }}
+                >
+                  <p style={{ fontSize: '2.6cqw', lineHeight: 1.6 }}>
+                    岁时有诗 · {date}
+                  </p>
+                  <h2
+                    className="w-full font-serif"
+                    style={{ fontSize: '4.4cqw', lineHeight: 1.9 }}
+                  >
+                    {day.poetry.content
+                      .match(/[^，。！？；]+[，。！？；]?/g)
+                      ?.map((line, i) => (
+                        <span className="block" key={i}>
+                          {line}
+                        </span>
+                      ))}
+                  </h2>
+                  <p style={{ fontSize: '2.6cqw', lineHeight: 1.6 }}>
+                    {day.poetry.author} · {day.poetry.title}
+                  </p>
+                </div>
               </div>
               <Button className="w-full" onClick={download}>
                 导出 PNG
