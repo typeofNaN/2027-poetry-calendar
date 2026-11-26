@@ -67,10 +67,6 @@ main {
     transparent 78%
   );
 }
-.immersive header,
-.immersive footer {
-  visibility: hidden;
-}
 .background-reveal {
   animation: background-reveal 0.7s ease-out both;
 }

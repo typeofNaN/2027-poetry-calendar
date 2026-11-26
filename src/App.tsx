@@ -1,5 +1,5 @@
 import { PoetryReader } from './components/PoetryReader';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Background } from './components/Background';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
@@ -95,6 +95,7 @@ export default function App() {
       ? q
       : clampDate(beijingDate());
   });
+  const [direction, setDirection] = useState(1);
   const [backgrounded, setBackgrounded] = useState(document.hidden);
 
   const [panel, setPanel] = useState('');
@@ -126,12 +127,16 @@ export default function App() {
   useEffect(() => {
     document.documentElement.classList.remove('dark');
   }, []);
-  const navigate = (next: string) => {
-    setDate(next);
-    const url = new URL(location.href);
-    url.searchParams.set('date', next);
-    history.replaceState({}, '', url);
-  };
+  const navigate = useCallback(
+    (next: string) => {
+      setDirection(next < date ? -1 : 1);
+      setDate(next);
+      const url = new URL(location.href);
+      url.searchParams.set('date', next);
+      history.replaceState({}, '', url);
+    },
+    [date],
+  );
   useEffect(() => {
     localStorage.setItem('favorites', JSON.stringify(favorites));
   }, [favorites]);
@@ -153,7 +158,7 @@ export default function App() {
       clearInterval(id);
       document.removeEventListener('visibilitychange', update);
     };
-  }, []);
+  }, [navigate]);
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).matches('input,select,textarea')) return;
@@ -163,7 +168,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [date, panel]);
+  }, [date, panel, navigate]);
   useEffect(() => {
     if (notice) {
       const t = setTimeout(() => setNotice(''), 3500);
@@ -227,7 +232,10 @@ export default function App() {
     setMonth(day.month);
   };
   const calendar = (m: number) => (
-    <section key={m}>
+    <section
+      key={m}
+      className="animate-in fade-in slide-in-from-bottom-1.5 duration-300"
+    >
       <h3>{m} 月</h3>
       <div className="grid grid-cols-7 py-4 text-center text-xs text-muted-foreground">
         {'日一二三四五六'.split('').map((x) => (
@@ -314,7 +322,7 @@ export default function App() {
           ))}
         </div>
       )}
-      <header className="reading-surface flex items-center justify-between gap-2 rounded-2xl px-4 py-3 md:px-6">
+      <header className="transition-[opacity,translate,visibility] duration-300 in-[.immersive]:opacity-0 in-[.immersive]:invisible in-[.immersive]:pointer-events-none reading-surface flex items-center justify-between gap-2 rounded-2xl px-4 py-3 md:px-6">
         <a
           className="flex items-center gap-3 font-serif text-xl tracking-widest md:text-2xl [&_small]:mt-1 [&_small]:block [&_small]:font-sans [&_small]:text-[9px] [&_small]:tracking-[.2em]"
           href={base}
@@ -365,7 +373,10 @@ export default function App() {
         </nav>
       </header>
       <div
-        className="my-6 grid flex-1 items-center gap-5 md:my-10 md:grid-cols-[1fr_2fr] md:gap-10"
+        style={
+          { '--page-offset': `${direction * 18}px` } as React.CSSProperties
+        }
+        className="[&>section]:animate-in [&>section]:fade-in [&>section]:slide-in-from-right-[var(--page-offset)] [&>section]:duration-500 my-6 grid flex-1 items-center gap-5 md:my-10 md:grid-cols-[1fr_2fr] md:gap-10"
         key={date}
       >
         <section className="reading-surface w-fit rounded-2xl px-6 py-5 font-serif md:px-8 [&_p]:my-2 [&_p]:text-sm [&_p]:tracking-widest">
@@ -404,7 +415,13 @@ export default function App() {
             }}
           >
             {day.poetry.content.split(/(?<=[，。！？])/).map((line, i) => (
-              <span key={i}>{line}</span>
+              <span
+                className="animate-in fade-in slide-in-from-bottom-1.5 fill-mode-both duration-500"
+                key={i}
+                style={{ animationDelay: `${80 + i * 55}ms` }}
+              >
+                {line}
+              </span>
             ))}
           </h1>
           <p className="mt-6 flex flex-wrap gap-3 font-serif text-sm tracking-wider text-muted-foreground">
@@ -420,7 +437,7 @@ export default function App() {
           </Button>
         </section>
       </div>
-      <footer className="reading-surface flex flex-wrap items-center justify-between gap-3 rounded-2xl px-3 py-2">
+      <footer className="transition-[opacity,translate,visibility] duration-300 in-[.immersive]:opacity-0 in-[.immersive]:invisible in-[.immersive]:pointer-events-none reading-surface flex flex-wrap items-center justify-between gap-3 rounded-2xl px-3 py-2">
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
@@ -451,8 +468,18 @@ export default function App() {
             : '把日子，过成诗。'}
         </p>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" aria-label="收藏当日诗词" onClick={toggle}>
-            <Heart fill={favorite ? 'currentColor' : 'none'} />
+          <Button
+            variant="ghost"
+            className="aria-pressed:text-primary"
+            aria-pressed={favorite}
+            aria-label="收藏当日诗词"
+            onClick={toggle}
+          >
+            <Heart
+              className={favorite ? 'animate-in zoom-in-75 duration-300' : ''}
+              key={String(favorite)}
+              fill={favorite ? 'currentColor' : 'none'}
+            />
           </Button>
           <Button variant="ghost" aria-label="分享" onClick={share}>
             <Share2 />
@@ -466,7 +493,7 @@ export default function App() {
           </Button>
         </div>
       </footer>
-      <div className="reading-surface relative mt-3 flex justify-between rounded-lg px-3 py-2 text-xs [&_i]:absolute [&_i]:bottom-0 [&_i]:left-0 [&_i]:h-0.5 [&_i]:bg-primary">
+      <div className="reading-surface [&_i]:transition-[width] [&_i]:duration-500 [&_i]:ease-out relative mt-3 flex justify-between rounded-lg px-3 py-2 text-xs [&_i]:absolute [&_i]:bottom-0 [&_i]:left-0 [&_i]:h-0.5 [&_i]:bg-primary">
         <span>第 {index + 1} / 365 天</span>
         <span>
           距年末 {364 - index} 天 · {(((index + 1) / 365) * 100).toFixed(2)}%
@@ -496,7 +523,7 @@ export default function App() {
       </nav>
       {notice && (
         <div
-          className="fixed bottom-24 left-1/2 z-[100] -translate-x-1/2 rounded-xl bg-foreground px-5 py-3 text-sm text-background shadow-lg"
+          className="animate-in fade-in slide-in-from-bottom-1.5 duration-300 fixed bottom-24 left-1/2 z-[100] -translate-x-1/2 rounded-xl bg-foreground px-5 py-3 text-sm text-background shadow-lg"
           role="status"
         >
           {notice}
